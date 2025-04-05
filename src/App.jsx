@@ -3,10 +3,13 @@ import GameController from './components/GameController';
 import GameModes, { GAME_MODES } from './components/GameModes';
 import PlayerProfile from './components/PlayerProfile';
 import Leaderboard from './components/Leaderboard';
-import { getHighScores, getPlayerProfile } from './utils/storage';
+import Settings from './components/Settings';
+import { useTheme } from './components/ThemeProvider';
+import { getHighScores, getPlayerProfile, getGameSettings } from './utils/storage';
 import './styles/App.css';
 
 function App() {
+  const { currentTheme } = useTheme();
   const [gameStarted, setGameStarted] = useState(false);
   const [highScore, setHighScore] = useState(0);
   const [currentScore, setCurrentScore] = useState(0);
@@ -14,9 +17,14 @@ function App() {
   const [showModes, setShowModes] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [playerProfile, setPlayerProfile] = useState({ name: 'Player' });
+  const [gameSettings, setGameSettings] = useState({
+    highContrastMode: false,
+    showTimer: true
+  });
 
-  // Load high score and player profile on mount
+  // Load high score, player profile, and game settings on mount
   useEffect(() => {
     const highScores = getHighScores();
     if (highScores.length > 0) {
@@ -26,6 +34,15 @@ function App() {
     const profile = getPlayerProfile();
     if (profile) {
       setPlayerProfile(profile);
+    }
+
+    const settings = getGameSettings();
+    if (settings) {
+      setGameSettings(prevSettings => ({
+        ...prevSettings,
+        highContrastMode: settings.highContrastMode || false,
+        showTimer: settings.showTimer !== undefined ? settings.showTimer : true
+      }));
     }
   }, []);
 
@@ -121,6 +138,13 @@ function App() {
                     >
                       Leaderboard
                     </button>
+
+                    <button
+                      className="secondary-button"
+                      onClick={() => setShowSettings(true)}
+                    >
+                      Settings
+                    </button>
                   </div>
                 </div>
               </>
@@ -159,6 +183,7 @@ function App() {
               timeLimit={selectedMode.timeLimit}
               lives={selectedMode.lives}
               gameMode={selectedMode.id}
+              highContrast={gameSettings.highContrastMode}
             />
 
             <button
@@ -185,6 +210,11 @@ function App() {
       <Leaderboard
         isOpen={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}
+      />
+
+      <Settings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
       />
     </div>
   );

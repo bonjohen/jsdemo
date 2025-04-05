@@ -26,6 +26,7 @@ import '../styles/GameController.css';
  * @param {number} props.timeLimit - Time limit in ms (null for no limit)
  * @param {number} props.lives - Number of lives (Infinity for unlimited)
  * @param {string} props.gameMode - Current game mode
+ * @param {boolean} props.highContrast - Whether to use high contrast mode
  */
 const GameController = ({
   initialGridSize = 3,
@@ -36,7 +37,8 @@ const GameController = ({
   playerName = 'Player',
   timeLimit = null,
   lives = 3,
-  gameMode = 'standard'
+  gameMode = 'standard',
+  highContrast = false
 }) => {
   // Game configuration
   const [gridSize, setGridSize] = useState(initialGridSize);
@@ -424,6 +426,7 @@ const GameController = ({
               showPattern={gameState === 'pattern' || gameState === 'success' || gameState === 'failure'}
               onTileClick={handleTileClick}
               disabled={gameState !== 'input'}
+              highContrast={highContrast}
             />
 
             {gameState === 'input' && (
@@ -481,7 +484,8 @@ GameController.propTypes = {
   playerName: PropTypes.string,
   timeLimit: PropTypes.number,
   lives: PropTypes.number,
-  gameMode: PropTypes.string
+  gameMode: PropTypes.string,
+  highContrast: PropTypes.bool
 };
 
 export default GameController;

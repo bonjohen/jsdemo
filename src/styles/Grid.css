@@ -5,15 +5,18 @@
   max-width: 500px;
   aspect-ratio: 1 / 1;
   margin: 0 auto;
+  position: relative;
 }
 
 .grid-tile {
   background-color: var(--grid-tile-color);
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
   border: 2px solid transparent;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .grid-tile:hover:not(:disabled) {
@@ -34,15 +37,122 @@
   border-color: rgba(0, 0, 0, 0.2);
 }
 
+.grid-tile.focused {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* High contrast mode */
+.grid-container.high-contrast .grid-tile {
+  border: 3px solid black;
+}
+
+.grid-container.high-contrast .grid-tile.active {
+  background-color: white;
+  border-color: black;
+  box-shadow: none;
+}
+
+.grid-container.high-contrast .grid-tile.selected {
+  background-color: black;
+  border-color: white;
+  color: white;
+}
+
+/* Shape indicators for high contrast mode */
+.grid-tile.shape-circle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.grid-tile.shape-square::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  background-color: currentColor;
+}
+
+.grid-tile.shape-diamond::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 60%;
+  height: 60%;
+  background-color: currentColor;
+}
+
+.grid-tile.shape-triangle::before {
+  content: '';
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-left: 30% solid transparent;
+  border-right: 30% solid transparent;
+  border-bottom: 52% solid currentColor;
+}
+
+/* Hide visual-only content from screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Keyboard focus styles */
+.grid-tile:focus {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Animation for active tiles */
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 195, 247, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 195, 247, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 195, 247, 0);
+  }
+}
+
+.grid-tile.active:not(.high-contrast) {
+  animation: pulse-border 1.5s infinite;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .grid-container {
     gap: 5px;
   }
-}
 
-/* Accessibility focus indicator */
-.grid-tile:focus {
-  outline: 3px solid var(--accent-color);
-  outline-offset: 2px;
+  .grid-tile:focus,
+  .grid-tile.focused {
+    outline-width: 2px;
+  }
 }
