@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import Grid from './Grid';
 import { generatePattern } from '../utils/patternGenerator';
 import {
-  calculateScore,
-  calculateTimeBonus,
   calculateComboMultiplier,
   calculatePenalty,
   calculateGridSize,
@@ -89,6 +87,8 @@ const GameController = ({
   const [achievements, setAchievements] = useState([]);
   const [showModelTraining, setShowModelTraining] = useState(false);
   const [responseTime, setResponseTime] = useState(0);
+  const [turnTimer, setTurnTimer] = useState(5); // 5-second timer for each turn
+  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false); // Flag to enable/disable submit button
 
   // Refs for timing
   const patternStartTime = useRef(null);
@@ -191,7 +191,25 @@ const GameController = ({
     if (gameState === 'pattern') {
       const timer = setTimeout(() => {
         setGameState('input');
+        setTurnTimer(5); // Reset turn timer to 5 seconds
+        setIsSubmitEnabled(true); // Enable submit button
         inputStartTime.current = Date.now();
+
+        // Start turn timer countdown
+        const turnTimerInterval = setInterval(() => {
+          setTurnTimer(prevTime => {
+            if (prevTime <= 1) {
+              clearInterval(turnTimerInterval);
+              // Time's up - handle as failure
+              handleFailure();
+              return 0;
+            }
+            return prevTime - 1;
+          });
+        }, 1000);
+
+        // Store interval ID for cleanup
+        return () => clearInterval(turnTimerInterval);
       }, displayTime);
 
       return () => clearTimeout(timer);
@@ -225,22 +243,30 @@ const GameController = ({
   const handleTileClick = (index, selections) => {
     if (gameState !== 'input') return;
 
-    setPlayerSelections(selections);
+    // Only allow selections if submit button is enabled
+    if (isSubmitEnabled) {
+      setPlayerSelections(selections);
+    }
+  };
 
-    // Check if the player has selected the correct number of tiles
-    if (selections.length === currentPattern.length) {
-      // Compare selections with the pattern
-      const isCorrect = currentPattern.every(patternIndex =>
-        selections.includes(patternIndex)
-      ) && selections.every(selectionIndex =>
-        currentPattern.includes(selectionIndex)
-      );
+  // Handle submit button click
+  const handleSubmit = () => {
+    if (gameState !== 'input' || !isSubmitEnabled) return;
 
-      if (isCorrect) {
-        handleSuccess();
-      } else {
-        handleFailure();
-      }
+    // Disable submit button to prevent multiple submissions
+    setIsSubmitEnabled(false);
+
+    // Compare selections with the pattern
+    const isCorrect = currentPattern.every(patternIndex =>
+      playerSelections.includes(patternIndex)
+    ) && playerSelections.every(selectionIndex =>
+      currentPattern.includes(selectionIndex)
+    ) && playerSelections.length === currentPattern.length;
+
+    if (isCorrect) {
+      handleSuccess();
+    } else {
+      handleFailure();
     }
   };
 
@@ -251,8 +277,10 @@ const GameController = ({
     // Calculate response time and time bonus
     const currentResponseTime = Date.now() - inputStartTime.current;
     setResponseTime(currentResponseTime);
-    const maxResponseTime = displayTime * 3; // Allow 3x the display time for response
-    const newTimeBonus = calculateTimeBonus(currentResponseTime, maxResponseTime);
+
+    // Calculate time bonus based on remaining turn timer (0-5 seconds)
+    // Higher remaining time = higher bonus
+    const newTimeBonus = turnTimer / 5; // 0-1 range based on remaining time
     setTimeBonus(newTimeBonus);
 
     // Play success sound
@@ -276,7 +304,11 @@ const GameController = ({
     setComboMultiplier(newComboMultiplier);
 
     // Calculate score based on grid size, pattern length, time bonus, and combo
-    const roundScore = calculateScore(gridSize, patternLength, newTimeBonus, newComboMultiplier);
+    // Enhanced scoring formula: (grid size^2 * pattern length * time bonus * combo multiplier)
+    const baseScore = gridSize * gridSize * patternLength; // Base score from grid size and pattern length
+    const timeMultiplier = 1 + newTimeBonus; // Time bonus (1.0 - 2.0 multiplier)
+    const roundScore = Math.round(baseScore * timeMultiplier * newComboMultiplier);
+
     const newScore = score + roundScore;
     setScore(newScore);
     onScoreChange(newScore);
@@ -488,7 +520,7 @@ const GameController = ({
               {gameState === 'input' && <div className="status-message">Reproduce the pattern</div>}
               {gameState === 'success' && (
                 <div className="status-message success">
-                  Correct! +{calculateScore(gridSize, patternLength, timeBonus, comboMultiplier)} points
+                  Correct! +{Math.round((gridSize * gridSize * patternLength) * (1 + timeBonus) * comboMultiplier)} points
                   {timeBonus > 0 && <span className="bonus">Time Bonus: {Math.round(timeBonus * 100)}%</span>}
                 </div>
               )}
@@ -505,8 +537,22 @@ const GameController = ({
             />
 
             {gameState === 'input' && (
-              <div className="selection-info">
-                Selected: {playerSelections.length} / {currentPattern.length}
+              <div className="input-controls">
+                <div className="selection-info">
+                  Selected: {playerSelections.length} / {currentPattern.length}
+                </div>
+
+                <div className="turn-timer">
+                  Time Remaining: {turnTimer}s
+                </div>
+
+                <button
+                  className="submit-button"
+                  onClick={handleSubmit}
+                  disabled={playerSelections.length !== currentPattern.length}
+                >
+                  Submit Pattern
+                </button>
               </div>
             )}
           </div>
