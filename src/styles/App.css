@@ -97,6 +97,11 @@
   font-size: 0.9rem;
 }
 
+.secondary-button.ai-button {
+  background-color: #673ab7;
+  font-weight: bold;
+}
+
 .back-button {
   background-color: #e0e0e0;
   color: var(--text-color);

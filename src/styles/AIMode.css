@@ -1,0 +1,104 @@
+.ai-mode {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.ai-mode h2 {
+  margin-bottom: 1rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+.description {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--background);
+  color: var(--text-color);
+}
+
+.ai-info {
+  background-color: rgba(79, 195, 247, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.ai-info h3 {
+  margin-bottom: 1rem;
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+}
+
+.ai-info ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.ai-info li {
+  margin-bottom: 0.5rem;
+}
+
+.player-info {
+  background-color: rgba(76, 175, 80, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.player-info h3 {
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.back-button {
+  background-color: #e0e0e0;
+  color: var(--text-color);
+  flex: 1;
+}
+
+.start-button {
+  background-color: var(--accent-color);
+  color: white;
+  flex: 2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .back-button,
+  .start-button {
+    width: 100%;
+  }
+}

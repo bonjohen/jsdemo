@@ -4,8 +4,11 @@ import GameModes, { GAME_MODES } from './components/GameModes';
 import PlayerProfile from './components/PlayerProfile';
 import Leaderboard from './components/Leaderboard';
 import Settings from './components/Settings';
+import AIMode from './components/AIMode';
+import AIGameController from './components/AIGameController';
 import { useTheme } from './components/ThemeProvider';
 import { getHighScores, getPlayerProfile, getGameSettings } from './utils/storage';
+import { AI_DIFFICULTY } from './utils/aiPlayer';
 import './styles/App.css';
 
 function App() {
@@ -18,11 +21,19 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAIMode, setShowAIMode] = useState(false);
   const [playerProfile, setPlayerProfile] = useState({ name: 'Player' });
   const [gameSettings, setGameSettings] = useState({
     highContrastMode: false,
     showTimer: true
   });
+  const [aiGameConfig, setAiGameConfig] = useState({
+    difficulty: AI_DIFFICULTY.MEDIUM,
+    gridSize: 4,
+    patternLength: 4,
+    rounds: 5
+  });
+  const [isAIMode, setIsAIMode] = useState(false);
 
   // Load high score, player profile, and game settings on mount
   useEffect(() => {
@@ -73,6 +84,7 @@ function App() {
   const handleBackToMenu = () => {
     setGameStarted(false);
     setCurrentScore(0);
+    setIsAIMode(false);
   };
 
   return (
@@ -96,7 +108,7 @@ function App() {
               the pattern. Each level increases in complexity.
             </p>
 
-            {!showModes ? (
+            {!showModes && !showAIMode ? (
               <>
                 <div className="instructions">
                   <strong>How to play:</strong>
@@ -112,7 +124,10 @@ function App() {
                 <div className="welcome-actions">
                   <button
                     className="start-button"
-                    onClick={() => setGameStarted(true)}
+                    onClick={() => {
+                      setGameStarted(true);
+                      setIsAIMode(false);
+                    }}
                   >
                     Start Game
                   </button>
@@ -145,20 +160,40 @@ function App() {
                     >
                       Settings
                     </button>
+
+                    <button
+                      className="secondary-button ai-button"
+                      onClick={() => setShowAIMode(true)}
+                    >
+                      AI vs. Player
+                    </button>
                   </div>
                 </div>
               </>
-            ) : (
+            ) : showModes ? (
               <GameModes
                 onSelectMode={handleModeSelect}
                 currentMode={selectedMode.id}
               />
+            ) : (
+              <AIMode
+                onStartGame={(config) => {
+                  setAiGameConfig(config);
+                  setGameStarted(true);
+                  setIsAIMode(true);
+                }}
+                onBack={() => setShowAIMode(false)}
+                playerName={playerProfile.name}
+              />
             )}
 
-            {showModes && (
+            {(showModes || showAIMode) && (
               <button
                 className="back-button"
-                onClick={() => setShowModes(false)}
+                onClick={() => {
+                  setShowModes(false);
+                  setShowAIMode(false);
+                }}
               >
                 Back
               </button>
@@ -168,23 +203,45 @@ function App() {
           <div className="game-container">
             <div className="game-header">
               <div className="game-mode-info">
-                <h3>{selectedMode.name}</h3>
-                <p>Player: {playerProfile.name}</p>
+                {!isAIMode ? (
+                  <>
+                    <h3>{selectedMode.name}</h3>
+                    <p>Player: {playerProfile.name}</p>
+                  </>
+                ) : (
+                  <>
+                    <h3>AI vs. Player Mode</h3>
+                    <p>Player: {playerProfile.name} | AI Difficulty: {aiGameConfig.difficulty}</p>
+                  </>
+                )}
               </div>
             </div>
 
-            <GameController
-              initialGridSize={selectedMode.initialGridSize}
-              initialPatternLength={selectedMode.initialPatternLength}
-              patternDisplayTime={selectedMode.patternDisplayTime}
-              onGameComplete={handleGameComplete}
-              onScoreChange={handleScoreChange}
-              playerName={playerProfile.name}
-              timeLimit={selectedMode.timeLimit}
-              lives={selectedMode.lives}
-              gameMode={selectedMode.id}
-              highContrast={gameSettings.highContrastMode}
-            />
+            {!isAIMode ? (
+              <GameController
+                initialGridSize={selectedMode.initialGridSize}
+                initialPatternLength={selectedMode.initialPatternLength}
+                patternDisplayTime={selectedMode.patternDisplayTime}
+                onGameComplete={handleGameComplete}
+                onScoreChange={handleScoreChange}
+                playerName={playerProfile.name}
+                timeLimit={selectedMode.timeLimit}
+                lives={selectedMode.lives}
+                gameMode={selectedMode.id}
+                highContrast={gameSettings.highContrastMode}
+              />
+            ) : (
+              <AIGameController
+                initialGridSize={aiGameConfig.gridSize}
+                initialPatternLength={aiGameConfig.patternLength}
+                patternDisplayTime={1000}
+                onGameComplete={handleGameComplete}
+                playerName={playerProfile.name}
+                aiDifficulty={aiGameConfig.difficulty}
+                rounds={aiGameConfig.rounds}
+                highContrast={gameSettings.highContrastMode}
+              />
+            )}
 
             <button
               className="reset-button"
