@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Grid from './Grid';
+import ModelTraining from './ModelTraining';
 import { generatePattern } from '../utils/patternGenerator';
 import {
   calculateScore,
@@ -12,6 +13,9 @@ import {
   calculatePatternDisplayTime
 } from '../utils/scoreManager';
 import { saveHighScore, saveGameProgress } from '../utils/storage';
+import { addTrainingData } from '../utils/tfModel';
+import { playSound } from '../utils/audioManager';
+import { createParticleEffect } from '../utils/visualEffects';
 import '../styles/GameController.css';
 
 /**
@@ -58,6 +62,8 @@ const GameController = ({
   const [timeBonus, setTimeBonus] = useState(0);
   const [remainingTime, setRemainingTime] = useState(timeLimit);
   const [achievements, setAchievements] = useState([]);
+  const [showModelTraining, setShowModelTraining] = useState(false);
+  const [responseTime, setResponseTime] = useState(0);
 
   // Refs for timing
   const patternStartTime = useRef(null);
@@ -218,10 +224,25 @@ const GameController = ({
     setGameState('success');
 
     // Calculate response time and time bonus
-    const responseTime = Date.now() - inputStartTime.current;
+    const currentResponseTime = Date.now() - inputStartTime.current;
+    setResponseTime(currentResponseTime);
     const maxResponseTime = displayTime * 3; // Allow 3x the display time for response
-    const newTimeBonus = calculateTimeBonus(responseTime, maxResponseTime);
+    const newTimeBonus = calculateTimeBonus(currentResponseTime, maxResponseTime);
     setTimeBonus(newTimeBonus);
+
+    // Play success sound
+    playSound('correct');
+
+    // Create particle effect
+    const gridElement = document.querySelector('.grid-container');
+    if (gridElement) {
+      const rect = gridElement.getBoundingClientRect();
+      createParticleEffect(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2,
+        { color: '#4caf50', count: 30, duration: 1000 }
+      );
+    }
 
     // Update consecutive correct count and combo multiplier
     const newConsecutiveCorrect = consecutiveCorrect + 1;
@@ -234,6 +255,15 @@ const GameController = ({
     const newScore = score + roundScore;
     setScore(newScore);
     onScoreChange(newScore);
+
+    // Add data to TensorFlow model
+    addTrainingData({
+      gridSize,
+      patternLength,
+      responseTime: currentResponseTime,
+      level,
+      success: true
+    });
 
     // Check for achievements
     checkAchievements(newScore, newConsecutiveCorrect);
@@ -266,9 +296,25 @@ const GameController = ({
   const handleFailure = () => {
     setGameState('failure');
 
+    // Calculate response time
+    const currentResponseTime = Date.now() - inputStartTime.current;
+    setResponseTime(currentResponseTime);
+
+    // Play failure sound
+    playSound('incorrect');
+
     // Reset consecutive correct count and combo multiplier
     setConsecutiveCorrect(0);
     setComboMultiplier(1);
+
+    // Add data to TensorFlow model
+    addTrainingData({
+      gridSize,
+      patternLength,
+      responseTime: currentResponseTime,
+      level,
+      success: false
+    });
 
     // Apply score penalty
     const newScore = calculatePenalty(score);
@@ -457,9 +503,18 @@ const GameController = ({
               </div>
             )}
 
-            <button className="restart-button" onClick={startGame}>
-              Play Again
-            </button>
+            <div className="game-actions">
+              <button className="restart-button" onClick={startGame}>
+                Play Again
+              </button>
+
+              <button
+                className="ai-button"
+                onClick={() => setShowModelTraining(true)}
+              >
+                AI Analysis & Optimization
+              </button>
+            </div>
           </div>
         );
 
@@ -468,9 +523,31 @@ const GameController = ({
     }
   };
 
+  // Handle optimal parameters from ModelTraining
+  const handleOptimalParameters = (params) => {
+    if (params) {
+      setGridSize(params.gridSize);
+      setPatternLength(params.patternLength);
+      setLevel(params.level);
+      setShowModelTraining(false);
+
+      // Start a new game with these parameters
+      setTimeout(() => {
+        startGame();
+      }, 500);
+    }
+  };
+
   return (
     <div className="game-controller">
       {renderGameContent()}
+
+      {/* TensorFlow.js Model Training Modal */}
+      <ModelTraining
+        isOpen={showModelTraining}
+        onClose={() => setShowModelTraining(false)}
+        onParametersGenerated={handleOptimalParameters}
+      />
     </div>
   );
 };

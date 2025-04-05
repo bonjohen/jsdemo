@@ -197,12 +197,26 @@
   font-weight: 500;
 }
 
+.game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .restart-button {
   background-color: var(--accent-color);
   color: white;
   font-size: 1.2rem;
   padding: 12px 30px;
-  margin-top: 1.5rem;
+}
+
+.ai-button {
+  background-color: #673ab7;
+  color: white;
+  font-size: 1.2rem;
+  padding: 12px 30px;
 }
 
 /* Animations */
