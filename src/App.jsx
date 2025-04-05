@@ -12,6 +12,7 @@ import { createParticleEffect, createScreenTransition } from './utils/visualEffe
 import { initPerformanceMonitoring, getPerformanceMode } from './utils/performanceOptimizer';
 import { detectBrowserCapabilities, applyBrowserFixes, addOfflineIndicator, registerServiceWorker } from './utils/browserCompatibility';
 import FEATURE_FLAGS, { isFeatureEnabled } from './utils/featureFlags';
+import { clearCachesAndReload } from './utils/devUtils';
 import './styles/App.css';
 
 // Conditionally import AI components based on feature flag
@@ -363,6 +364,17 @@ function App() {
 
       <footer className="app-footer">
         <p>&copy; {new Date().getFullYear()} NeuroMatch</p>
+
+        {/* Development-only cache-busting button */}
+        {import.meta.env.DEV && (
+          <button
+            className="dev-button"
+            onClick={clearCachesAndReload}
+            title="Clear browser caches and reload the page"
+          >
+            🔄 Clear Cache
+          </button>
+        )}
       </footer>
 
       {/* Modals */}

@@ -12,6 +12,9 @@ import '../styles/Grid.css';
  * @param {Function} props.onTileClick - Callback function when a tile is clicked
  * @param {boolean} props.disabled - Whether the grid is disabled for interaction
  * @param {boolean} props.highContrast - Whether to use high contrast mode
+ * @param {number} props.countdown - Current countdown value to display over the grid
+ * @param {boolean} props.showCountdown - Whether to show the countdown overlay
+ * @param {Array} props.incorrectSelections - Array of indices representing incorrect selections
  */
 const Grid = ({
   size = 3,
@@ -19,7 +22,10 @@ const Grid = ({
   showPattern = false,
   onTileClick = () => {},
   disabled = false,
-  highContrast = false
+  highContrast = false,
+  countdown = 0,
+  showCountdown = false,
+  incorrectSelections = []
 }) => {
   const [selectedTiles, setSelectedTiles] = useState([]);
   const [focusedTile, setFocusedTile] = useState(null);
@@ -168,24 +174,40 @@ const Grid = ({
       className={`grid-container ${highContrast ? 'high-contrast' : ''}`}
       style={{
         gridTemplateColumns: `repeat(${size}, 1fr)`,
-        gridTemplateRows: `repeat(${size}, 1fr)`
+        gridTemplateRows: `repeat(${size}, 1fr)`,
+        position: 'relative' // For absolute positioning of countdown overlay
       }}
       aria-label={`${size}x${size} memory grid`}
       tabIndex="-1" // Make div focusable but not in tab order
       role="grid"
     >
+      {/* Countdown overlay */}
+      {showCountdown && (
+        <div className="countdown-overlay">
+          <div className="countdown-value">{countdown}</div>
+        </div>
+      )}
+
       {Array.from({ length: totalTiles }).map((_, index) => {
         const { row, col } = getCoordinates(index);
         const shape = getTileShape(index);
+        const isIncorrect = incorrectSelections.includes(index);
+
         return (
           <button
             ref={el => tileRefs.current[index] = el}
             key={index}
-            className={`grid-tile ${isTileActive(index) ? 'active' : ''} ${isTileSelected(index) ? 'selected' : ''} ${isTileFocused(index) ? 'focused' : ''} ${shape ? `shape-${shape}` : ''}`}
+            className={`grid-tile
+              ${isTileActive(index) ? 'active' : ''}
+              ${isTileSelected(index) ? 'selected' : ''}
+              ${isTileFocused(index) ? 'focused' : ''}
+              ${isIncorrect ? 'incorrect' : ''}
+              ${shape ? `shape-${shape}` : ''}`
+            }
             onClick={() => handleTileClick(index)}
             onFocus={() => setFocusedTile(index)}
             disabled={disabled}
-            aria-label={`Tile at row ${row + 1}, column ${col + 1}${isTileActive(index) ? ', active' : ''}${isTileSelected(index) ? ', selected' : ''}`}
+            aria-label={`Tile at row ${row + 1}, column ${col + 1}${isTileActive(index) ? ', active' : ''}${isTileSelected(index) ? ', selected' : ''}${isIncorrect ? ', incorrect' : ''}`}
             aria-pressed={isTileSelected(index)}
             data-row={row}
             data-col={col}
@@ -195,6 +217,17 @@ const Grid = ({
           </button>
         );
       })}
+
+      {/* Visual timer indicator */}
+      <div className="timer-indicator-container">
+        <div
+          className="timer-indicator"
+          style={{
+            width: `${(countdown / 5) * 100}%`,
+            backgroundColor: countdown <= 2 ? '#ff4d4d' : countdown <= 3 ? '#ffcc00' : '#4caf50'
+          }}
+        ></div>
+      </div>
     </div>
   );
 };
@@ -205,7 +238,10 @@ Grid.propTypes = {
   showPattern: PropTypes.bool,
   onTileClick: PropTypes.func,
   disabled: PropTypes.bool,
-  highContrast: PropTypes.bool
+  highContrast: PropTypes.bool,
+  countdown: PropTypes.number,
+  showCountdown: PropTypes.bool,
+  incorrectSelections: PropTypes.arrayOf(PropTypes.number)
 };
 
 export default Grid;
