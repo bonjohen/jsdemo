@@ -155,4 +155,67 @@
   .grid-tile.focused {
     outline-width: 2px;
   }
+
+  .countdown-value {
+    font-size: 5rem;
+  }
+}
+
+/* Incorrect selection */
+.grid-tile.incorrect {
+  border: 3px solid #ff4d4d !important;
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Countdown overlay */
+.countdown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  border-radius: 8px;
+  backdrop-filter: blur(2px);
+}
+
+.countdown-value {
+  font-size: 10rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+  animation: countdown-pulse 1s infinite;
+}
+
+@keyframes countdown-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Timer indicator */
+.timer-indicator-container {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.timer-indicator {
+  height: 100%;
+  transition: width 0.2s linear, background-color 0.5s;
 }

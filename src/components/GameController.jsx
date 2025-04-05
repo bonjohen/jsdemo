@@ -170,10 +170,10 @@ const GameController = ({
     onGameComplete(score);
   };
 
-  // Handle countdown and show pattern simultaneously
+  // Handle countdown with pattern display, then clear grid for input
   useEffect(() => {
     if (gameState === 'countdown' && countdown > 0) {
-      // Generate pattern when countdown starts if not already generated
+      // Generate pattern immediately when countdown starts
       if (countdown === 3 && currentPattern.length === 0) {
         generateNewPattern();
       }
@@ -184,7 +184,7 @@ const GameController = ({
 
       return () => clearTimeout(timer);
     } else if (gameState === 'countdown' && countdown === 0) {
-      // Move directly to input phase since pattern is already shown during countdown
+      // Move to input phase and clear the grid (hide pattern)
       setGameState('input');
       setTurnTimer(5); // Reset turn timer to 5 seconds
       setPlayerSelections([]); // Clear any previous selections
@@ -539,6 +539,7 @@ const GameController = ({
             </div>
 
             <div className="game-status">
+              {gameState === 'countdown' && <div className="status-message">Memorize the pattern!</div>}
               {gameState === 'pattern' && <div className="status-message">Memorize the pattern!</div>}
               {gameState === 'input' && <div className="status-message">Reproduce the pattern</div>}
               {gameState === 'success' && (
@@ -553,7 +554,7 @@ const GameController = ({
             <Grid
               size={gridSize}
               activePattern={currentPattern}
-              showPattern={gameState === 'pattern' || gameState === 'success' || gameState === 'failure'}
+              showPattern={gameState === 'countdown' || gameState === 'pattern' || gameState === 'success' || gameState === 'failure'}
               onTileClick={handleTileClick}
               disabled={gameState !== 'input'}
               highContrast={highContrast}
