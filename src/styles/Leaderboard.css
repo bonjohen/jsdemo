@@ -1,0 +1,152 @@
+.leaderboard-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.leaderboard-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.leaderboard-modal h2 {
+  margin-bottom: 1.5rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.filter-controls label {
+  margin-right: 0.5rem;
+  font-weight: 600;
+}
+
+.filter-controls select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.leaderboard-table th {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+}
+
+.leaderboard-table tr:hover {
+  background-color: rgba(79, 195, 247, 0.05);
+}
+
+.leaderboard-table tr.top-score {
+  background-color: rgba(79, 195, 247, 0.1);
+}
+
+.leaderboard-table tr.top-score:first-child {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.leaderboard-table tr.top-score:first-child td:first-child {
+  position: relative;
+}
+
+.leaderboard-table tr.top-score:first-child td:first-child::after {
+  content: "👑";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.no-scores {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .leaderboard-modal {
+    padding: 1.5rem;
+  }
+  
+  .filter-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .filter-controls select {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  .leaderboard-table {
+    font-size: 0.9rem;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.5rem;
+  }
+  
+  /* Hide less important columns on small screens */
+  .leaderboard-table th:nth-child(4),
+  .leaderboard-table td:nth-child(4),
+  .leaderboard-table th:nth-child(6),
+  .leaderboard-table td:nth-child(6) {
+    display: none;
+  }
+}

@@ -1,0 +1,158 @@
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.profile-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.profile-modal h2 {
+  margin-bottom: 1.5rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.avatar {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+}
+
+.avatar.selected {
+  border-color: var(--accent-color);
+  background-color: rgba(79, 195, 247, 0.1);
+}
+
+.avatar-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+}
+
+/* Placeholder avatar styles - in a real app, these would be actual images */
+.avatar-image.avatar1 { background-color: #4fc3f7; }
+.avatar-image.avatar2 { background-color: #ff9800; }
+.avatar-image.avatar3 { background-color: #4caf50; }
+.avatar-image.avatar4 { background-color: #f44336; }
+.avatar-image.avatar5 { background-color: #9c27b0; }
+.avatar-image.avatar6 { background-color: #795548; }
+
+.avatar-image.avatar1::after { content: "1"; }
+.avatar-image.avatar2::after { content: "2"; }
+.avatar-image.avatar3::after { content: "3"; }
+.avatar-image.avatar4::after { content: "4"; }
+.avatar-image.avatar5::after { content: "5"; }
+.avatar-image.avatar6::after { content: "6"; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.cancel-button {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.save-button {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .profile-modal {
+    padding: 1.5rem;
+  }
+  
+  .avatar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
