@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import Grid from './Grid';
-import ModelTraining from './ModelTraining';
 import { generatePattern } from '../utils/patternGenerator';
 import {
   calculateScore,
@@ -13,10 +12,36 @@ import {
   calculatePatternDisplayTime
 } from '../utils/scoreManager';
 import { saveHighScore, saveGameProgress } from '../utils/storage';
-import { addTrainingData } from '../utils/tfModel';
+import { isFeatureEnabled } from '../utils/featureFlags';
 import { playSound } from '../utils/audioManager';
 import { createParticleEffect } from '../utils/visualEffects';
 import '../styles/GameController.css';
+
+// Lazy load the ModelTraining component
+const ModelTraining = React.lazy(() => {
+  if (isFeatureEnabled('TENSORFLOW_ENABLED')) {
+    return import('./ModelTraining').catch(() => {
+      console.warn('ModelTraining component could not be loaded');
+      return { default: () => null };
+    });
+  } else {
+    return Promise.resolve({ default: () => null });
+  }
+});
+
+// Create a safe version of addTrainingData that won't crash if TensorFlow.js isn't available
+const addTrainingData = (data) => {
+  // Only import and use TensorFlow.js if it's actually needed and enabled
+  if (isFeatureEnabled('TENSORFLOW_ENABLED')) {
+    import('../utils/tfModel')
+      .then(module => {
+        module.addTrainingData(data);
+      })
+      .catch(error => {
+        console.warn('TensorFlow.js module could not be loaded:', error);
+      });
+  }
+};
 
 /**
  * GameController component that manages the game state and logic
@@ -256,14 +281,16 @@ const GameController = ({
     setScore(newScore);
     onScoreChange(newScore);
 
-    // Add data to TensorFlow model
-    addTrainingData({
-      gridSize,
-      patternLength,
-      responseTime: currentResponseTime,
-      level,
-      success: true
-    });
+    // Add data to TensorFlow model if enabled
+    if (isFeatureEnabled('TENSORFLOW_ENABLED')) {
+      addTrainingData({
+        gridSize,
+        patternLength,
+        responseTime: currentResponseTime,
+        level,
+        success: true
+      });
+    }
 
     // Check for achievements
     checkAchievements(newScore, newConsecutiveCorrect);
@@ -307,14 +334,16 @@ const GameController = ({
     setConsecutiveCorrect(0);
     setComboMultiplier(1);
 
-    // Add data to TensorFlow model
-    addTrainingData({
-      gridSize,
-      patternLength,
-      responseTime: currentResponseTime,
-      level,
-      success: false
-    });
+    // Add data to TensorFlow model if enabled
+    if (isFeatureEnabled('TENSORFLOW_ENABLED')) {
+      addTrainingData({
+        gridSize,
+        patternLength,
+        responseTime: currentResponseTime,
+        level,
+        success: false
+      });
+    }
 
     // Apply score penalty
     const newScore = calculatePenalty(score);
@@ -508,12 +537,14 @@ const GameController = ({
                 Play Again
               </button>
 
-              <button
-                className="ai-button"
-                onClick={() => setShowModelTraining(true)}
-              >
-                AI Analysis & Optimization
-              </button>
+              {isFeatureEnabled('TENSORFLOW_ENABLED') && (
+                <button
+                  className="ai-button"
+                  onClick={() => setShowModelTraining(true)}
+                >
+                  AI Analysis & Optimization
+                </button>
+              )}
             </div>
           </div>
         );
@@ -543,11 +574,28 @@ const GameController = ({
       {renderGameContent()}
 
       {/* TensorFlow.js Model Training Modal */}
-      <ModelTraining
-        isOpen={showModelTraining}
-        onClose={() => setShowModelTraining(false)}
-        onParametersGenerated={handleOptimalParameters}
-      />
+      {isFeatureEnabled('TENSORFLOW_ENABLED') ? (
+        <Suspense fallback={<div>Loading...</div>}>
+          {showModelTraining && (
+            <ModelTraining
+              isOpen={showModelTraining}
+              onClose={() => setShowModelTraining(false)}
+              onParametersGenerated={handleOptimalParameters}
+            />
+          )}
+        </Suspense>
+      ) : showModelTraining && (
+        <div className="feature-disabled">
+          <h3>TensorFlow.js Integration is currently disabled</h3>
+          <p>This feature will be available in a future update.</p>
+          <button
+            className="back-button"
+            onClick={() => setShowModelTraining(false)}
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 };

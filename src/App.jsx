@@ -4,17 +4,25 @@ import GameModes, { GAME_MODES } from './components/GameModes';
 import PlayerProfile from './components/PlayerProfile';
 import Leaderboard from './components/Leaderboard';
 import Settings from './components/Settings';
-import AIMode from './components/AIMode';
-import AIGameController from './components/AIGameController';
 import PerformanceMonitor from './components/PerformanceMonitor';
 import { useTheme } from './components/ThemeProvider';
 import { getHighScores, getPlayerProfile, getGameSettings } from './utils/storage';
-import { AI_DIFFICULTY } from './utils/aiPlayer';
 import { initAudio, playSound, playMusic, setVolume, setMute } from './utils/audioManager';
 import { createParticleEffect, createScreenTransition } from './utils/visualEffects';
 import { initPerformanceMonitoring, getPerformanceMode } from './utils/performanceOptimizer';
 import { detectBrowserCapabilities, applyBrowserFixes, addOfflineIndicator, registerServiceWorker } from './utils/browserCompatibility';
+import FEATURE_FLAGS, { isFeatureEnabled } from './utils/featureFlags';
 import './styles/App.css';
+
+// Conditionally import AI components based on feature flag
+let AIMode, AIGameController, AI_DIFFICULTY, AI_PERSONALITY;
+if (isFeatureEnabled('AI_FRAMEWORK_ENABLED')) {
+  AIMode = require('./components/AIMode').default;
+  AIGameController = require('./components/AIGameController').default;
+  const aiPlayer = require('./utils/aiPlayer');
+  AI_DIFFICULTY = aiPlayer.AI_DIFFICULTY;
+  AI_PERSONALITY = aiPlayer.AI_PERSONALITY;
+}
 
 function App() {
   const { currentTheme } = useTheme();
@@ -36,9 +44,10 @@ function App() {
     volume: 0.7,
     showPerformanceMonitor: false
   });
+  // Set default AI game config with fallbacks if AI framework is disabled
   const [aiGameConfig, setAiGameConfig] = useState({
-    difficulty: AI_DIFFICULTY.MEDIUM,
-    personality: AI_PERSONALITY.BALANCED,
+    difficulty: isFeatureEnabled('AI_FRAMEWORK_ENABLED') ? AI_DIFFICULTY.MEDIUM : 'medium',
+    personality: isFeatureEnabled('AI_FRAMEWORK_ENABLED') ? AI_DIFFICULTY.BALANCED : 'balanced',
     gridSize: 4,
     patternLength: 4,
     rounds: 5
@@ -49,6 +58,19 @@ function App() {
     capabilities: {}
   });
   const [isAudioInitialized, setIsAudioInitialized] = useState(false);
+
+  // Redirect to main menu if AI mode is enabled but the feature is disabled
+  useEffect(() => {
+    if (isAIMode && !isFeatureEnabled('AI_FRAMEWORK_ENABLED')) {
+      // Add a small delay to show the message before redirecting
+      const timer = setTimeout(() => {
+        setIsAIMode(false);
+        setGameStarted(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isAIMode]);
 
   // Initialize app on mount
   useEffect(() => {
@@ -68,19 +90,25 @@ function App() {
     // Register service worker for offline support
     registerServiceWorker('/serviceWorker.js').catch(console.error);
 
-    // Initialize performance monitoring
-    initPerformanceMonitoring();
+    // Initialize performance monitoring if enabled
+    if (isFeatureEnabled('PERFORMANCE_MONITORING_ENABLED')) {
+      initPerformanceMonitoring();
+    }
 
-    // Initialize audio system
-    initAudio().then(success => {
-      setIsAudioInitialized(success);
-      if (success && gameSettings.musicEnabled) {
-        playMusic(true);
-      }
-    }).catch(console.error);
+    // Initialize audio system if enabled
+    if (isFeatureEnabled('AUDIO_ENABLED')) {
+      initAudio().then(success => {
+        setIsAudioInitialized(success);
+        if (success && gameSettings.musicEnabled) {
+          playMusic(true);
+        }
+      }).catch(console.error);
+    }
 
-    // Apply screen transition effect
-    createScreenTransition('fade', 1000);
+    // Apply screen transition effect if enabled
+    if (isFeatureEnabled('VISUAL_EFFECTS_ENABLED')) {
+      createScreenTransition('fade', 1000);
+    }
 
     return () => {
       // Clean up resources when component unmounts
@@ -220,12 +248,14 @@ function App() {
                       Settings
                     </button>
 
-                    <button
-                      className="secondary-button ai-button"
-                      onClick={() => setShowAIMode(true)}
-                    >
-                      AI vs. Player
-                    </button>
+                    {isFeatureEnabled('AI_FRAMEWORK_ENABLED') && (
+                      <button
+                        className="secondary-button ai-button"
+                        onClick={() => setShowAIMode(true)}
+                      >
+                        AI vs. Player
+                      </button>
+                    )}
                   </div>
                 </div>
               </>
@@ -234,7 +264,7 @@ function App() {
                 onSelectMode={handleModeSelect}
                 currentMode={selectedMode.id}
               />
-            ) : (
+            ) : showAIMode && isFeatureEnabled('AI_FRAMEWORK_ENABLED') ? (
               <AIMode
                 onStartGame={(config) => {
                   setAiGameConfig(config);
@@ -244,6 +274,17 @@ function App() {
                 onBack={() => setShowAIMode(false)}
                 playerName={playerProfile.name}
               />
+            ) : (
+              <div className="feature-disabled">
+                <h3>AI Mode is currently disabled</h3>
+                <p>This feature will be available in a future update.</p>
+                <button
+                  className="back-button"
+                  onClick={() => setShowAIMode(false)}
+                >
+                  Back to Menu
+                </button>
+              </div>
             )}
 
             {(showModes || showAIMode) && (
@@ -289,7 +330,7 @@ function App() {
                 gameMode={selectedMode.id}
                 highContrast={gameSettings.highContrastMode}
               />
-            ) : (
+            ) : isFeatureEnabled('AI_FRAMEWORK_ENABLED') ? (
               <AIGameController
                 initialGridSize={aiGameConfig.gridSize}
                 initialPatternLength={aiGameConfig.patternLength}
@@ -302,6 +343,12 @@ function App() {
                 highContrast={gameSettings.highContrastMode}
                 soundEnabled={gameSettings.soundEffectsEnabled}
               />
+            ) : (
+              <div className="feature-disabled">
+                <h3>AI Mode is currently disabled</h3>
+                <p>This feature will be available in a future update.</p>
+                <p>Returning to main menu...</p>
+              </div>
             )}
 
             <button
@@ -336,7 +383,9 @@ function App() {
       />
 
       {/* Performance Monitor */}
-      <PerformanceMonitor visible={gameSettings.showPerformanceMonitor} />
+      {isFeatureEnabled('PERFORMANCE_MONITORING_ENABLED') && (
+        <PerformanceMonitor visible={gameSettings.showPerformanceMonitor} />
+      )}
     </div>
   );
 }

@@ -147,6 +147,53 @@
   color: var(--text-color);
 }
 
+/* Simple game for testing */
+.simple-game {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.simple-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 10px;
+  width: 300px;
+  height: 300px;
+  margin: 0 auto;
+}
+
+.simple-tile {
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.simple-tile:hover {
+  background-color: var(--accent-color);
+  transform: scale(1.05);
+}
+
+/* Feature Disabled Message */
+.feature-disabled {
+  text-align: center;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.feature-disabled h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.feature-disabled p {
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
 /* Footer */
 .app-footer {
   background-color: var(--primary-color);
