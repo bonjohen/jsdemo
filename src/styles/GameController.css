@@ -149,22 +149,69 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
 }
 
 .selection-info {
   text-align: center;
+  width: 100%;
+}
+
+.selection-counts {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.correct-count {
+  color: #4caf50;
+}
+
+.incorrect-count {
+  color: #f44336;
 }
 
 /* Turn timer */
-.turn-timer {
-  font-size: 1.2rem;
-  font-weight: 600;
+.turn-timer-container {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.turn-timer-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.turn-timer-value {
+  font-size: 2rem;
+  font-weight: 700;
   color: var(--accent-color);
+  margin-bottom: 0.5rem;
   animation: pulse 1s infinite;
+}
+
+.turn-timer-bar {
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.turn-timer-progress {
+  height: 100%;
+  transition: width 0.2s linear, background-color 0.5s;
 }
 
 @keyframes pulse {
@@ -177,7 +224,7 @@
 .submit-button {
   background-color: var(--accent-color);
   color: white;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -185,9 +232,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: 0.5rem;
+  width: 100%;
 }
 
-.submit-button:hover:not(:disabled) {
+.submit-button:hover {
   background-color: var(--primary-color);
   transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

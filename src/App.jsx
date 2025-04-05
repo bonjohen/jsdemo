@@ -216,7 +216,7 @@ function App() {
                       setIsAIMode(false);
                     }}
                   >
-                    Start Game
+                    Begin
                   </button>
 
                   <div className="secondary-actions">

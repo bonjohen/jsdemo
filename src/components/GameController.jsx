@@ -86,9 +86,7 @@ const GameController = ({
   const [remainingTime, setRemainingTime] = useState(timeLimit);
   const [achievements, setAchievements] = useState([]);
   const [showModelTraining, setShowModelTraining] = useState(false);
-  const [responseTime, setResponseTime] = useState(0);
   const [turnTimer, setTurnTimer] = useState(5); // 5-second timer for each turn
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false); // Flag to enable/disable submit button
 
   // Refs for timing
   const patternStartTime = useRef(null);
@@ -172,49 +170,46 @@ const GameController = ({
     onGameComplete(score);
   };
 
-  // Handle countdown before showing pattern
+  // Handle countdown and show pattern simultaneously
   useEffect(() => {
     if (gameState === 'countdown' && countdown > 0) {
+      // Generate pattern when countdown starts if not already generated
+      if (countdown === 3 && currentPattern.length === 0) {
+        generateNewPattern();
+      }
+
       const timer = setTimeout(() => {
         setCountdown(countdown - 1);
       }, 1000);
 
       return () => clearTimeout(timer);
     } else if (gameState === 'countdown' && countdown === 0) {
-      setGameState('pattern');
+      // Move directly to input phase since pattern is already shown during countdown
+      setGameState('input');
+      setTurnTimer(5); // Reset turn timer to 5 seconds
+      setPlayerSelections([]); // Clear any previous selections
+      inputStartTime.current = Date.now();
       patternStartTime.current = Date.now();
+
+      // Start turn timer countdown
+      const turnTimerInterval = setInterval(() => {
+        setTurnTimer(prevTime => {
+          if (prevTime <= 1) {
+            clearInterval(turnTimerInterval);
+            // Time's up - handle as failure
+            handleFailure();
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(turnTimerInterval);
     }
-  }, [gameState, countdown]);
+  }, [gameState, countdown, currentPattern.length, generateNewPattern]);
 
-  // Handle pattern display
-  useEffect(() => {
-    if (gameState === 'pattern') {
-      const timer = setTimeout(() => {
-        setGameState('input');
-        setTurnTimer(5); // Reset turn timer to 5 seconds
-        setIsSubmitEnabled(true); // Enable submit button
-        inputStartTime.current = Date.now();
-
-        // Start turn timer countdown
-        const turnTimerInterval = setInterval(() => {
-          setTurnTimer(prevTime => {
-            if (prevTime <= 1) {
-              clearInterval(turnTimerInterval);
-              // Time's up - handle as failure
-              handleFailure();
-              return 0;
-            }
-            return prevTime - 1;
-          });
-        }, 1000);
-
-        // Store interval ID for cleanup
-        return () => clearInterval(turnTimerInterval);
-      }, displayTime);
-
-      return () => clearTimeout(timer);
-    }
-  }, [gameState, displayTime]);
+  // We no longer need this effect since we're showing the pattern during countdown
+  // and moving directly to input phase
 
   // Clean up timers on unmount
   useEffect(() => {
@@ -240,32 +235,35 @@ const GameController = ({
   }, [level, score, gridSize, patternLength, remainingLives, gameMode]);
 
   // Handle tile click during input phase
-  const handleTileClick = (index, selections) => {
+  const handleTileClick = (_, selections) => {
     if (gameState !== 'input') return;
 
-    // Only allow selections if submit button is enabled
-    if (isSubmitEnabled) {
-      setPlayerSelections(selections);
+    // Update player selections
+    setPlayerSelections(selections);
+
+    // Check if all correct tiles are selected (and no incorrect ones)
+    const correctSelections = selections.filter(idx => currentPattern.includes(idx));
+    const incorrectSelections = selections.filter(idx => !currentPattern.includes(idx));
+
+    // If player has selected all correct tiles and no incorrect ones, proceed automatically
+    if (correctSelections.length === currentPattern.length && incorrectSelections.length === 0) {
+      handleSuccess();
     }
   };
 
   // Handle submit button click
   const handleSubmit = () => {
-    if (gameState !== 'input' || !isSubmitEnabled) return;
+    if (gameState !== 'input') return;
 
-    // Disable submit button to prevent multiple submissions
-    setIsSubmitEnabled(false);
+    // Check if the selections match the pattern
+    const correctSelections = playerSelections.filter(idx => currentPattern.includes(idx));
+    const incorrectSelections = playerSelections.filter(idx => !currentPattern.includes(idx));
 
-    // Compare selections with the pattern
-    const isCorrect = currentPattern.every(patternIndex =>
-      playerSelections.includes(patternIndex)
-    ) && playerSelections.every(selectionIndex =>
-      currentPattern.includes(selectionIndex)
-    ) && playerSelections.length === currentPattern.length;
-
-    if (isCorrect) {
+    // If all correct and no incorrect, handle as success
+    if (correctSelections.length === currentPattern.length && incorrectSelections.length === 0) {
       handleSuccess();
     } else {
+      // Handle as failure
       handleFailure();
     }
   };
@@ -276,7 +274,6 @@ const GameController = ({
 
     // Calculate response time and time bonus
     const currentResponseTime = Date.now() - inputStartTime.current;
-    setResponseTime(currentResponseTime);
 
     // Calculate time bonus based on remaining turn timer (0-5 seconds)
     // Higher remaining time = higher bonus
@@ -357,7 +354,6 @@ const GameController = ({
 
     // Calculate response time
     const currentResponseTime = Date.now() - inputStartTime.current;
-    setResponseTime(currentResponseTime);
 
     // Play failure sound
     playSound('incorrect');
@@ -473,10 +469,37 @@ const GameController = ({
 
       case 'countdown':
         return (
-          <div className="game-countdown">
-            <h2>Get Ready!</h2>
-            <div className="countdown">{countdown}</div>
-            <p>Remember the pattern that will appear</p>
+          <div className="game-active">
+            <div className="game-header">
+              <div className="level-info">Level {level}</div>
+              <div className="score-info">Score: {score}</div>
+              {lives !== Infinity && (
+                <div className="lives-info">
+                  Lives: {remainingLives}
+                </div>
+              )}
+              {timeLimit > 0 && (
+                <div className="time-info">
+                  Time: {formatTime(remainingTime)}
+                </div>
+              )}
+            </div>
+
+            <div className="game-status">
+              <div className="status-message">Get Ready!</div>
+            </div>
+
+            <Grid
+              size={gridSize}
+              activePattern={currentPattern}
+              showPattern={true}
+              onTileClick={() => {}}
+              disabled={true}
+              highContrast={highContrast}
+              countdown={countdown}
+              showCountdown={true}
+              incorrectSelections={[]}
+            />
           </div>
         );
 
@@ -534,22 +557,42 @@ const GameController = ({
               onTileClick={handleTileClick}
               disabled={gameState !== 'input'}
               highContrast={highContrast}
+              countdown={gameState === 'countdown' ? countdown : turnTimer}
+              showCountdown={gameState === 'countdown'}
+              incorrectSelections={gameState === 'failure' ? playerSelections.filter(index => !currentPattern.includes(index)) : []}
             />
 
             {gameState === 'input' && (
               <div className="input-controls">
                 <div className="selection-info">
-                  Selected: {playerSelections.length} / {currentPattern.length}
+                  {/* Show correct and incorrect selections */}
+                  <div className="selection-counts">
+                    <span className="correct-count">
+                      Correct: {playerSelections.filter(idx => currentPattern.includes(idx)).length} / {currentPattern.length}
+                    </span>
+                    <span className="incorrect-count">
+                      Incorrect: {playerSelections.filter(idx => !currentPattern.includes(idx)).length}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="turn-timer">
-                  Time Remaining: {turnTimer}s
+                <div className="turn-timer-container">
+                  <div className="turn-timer-label">Time Remaining:</div>
+                  <div className="turn-timer-value">{turnTimer}s</div>
+                  <div className="turn-timer-bar">
+                    <div
+                      className="turn-timer-progress"
+                      style={{
+                        width: `${(turnTimer / 5) * 100}%`,
+                        backgroundColor: turnTimer <= 2 ? '#ff4d4d' : turnTimer <= 3 ? '#ffcc00' : '#4caf50'
+                      }}
+                    ></div>
+                  </div>
                 </div>
 
                 <button
                   className="submit-button"
                   onClick={handleSubmit}
-                  disabled={playerSelections.length !== currentPattern.length}
                 >
                   Submit Pattern
                 </button>
