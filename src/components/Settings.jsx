@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from './ThemeProvider';
 import { getGameSettings, saveGameSettings } from '../utils/storage';
+import { setVolume, setMute, playSound } from '../utils/audioManager';
+import { getPerformanceMode, setPerformanceMode } from '../utils/performanceOptimizer';
 import '../styles/Settings.css';
 
 /**
@@ -12,7 +14,7 @@ import '../styles/Settings.css';
  */
 const Settings = ({ isOpen, onClose }) => {
   const { currentTheme, changeTheme, themes } = useTheme();
-  
+
   const [settings, setSettings] = useState({
     volume: 0.7,
     musicEnabled: true,
@@ -20,9 +22,11 @@ const Settings = ({ isOpen, onClose }) => {
     difficulty: 'normal',
     showTimer: true,
     keyboardControls: true,
-    highContrastMode: false
+    highContrastMode: false,
+    showPerformanceMonitor: false,
+    performanceMode: getPerformanceMode()
   });
-  
+
   // Load settings on mount and when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -33,57 +37,80 @@ const Settings = ({ isOpen, onClose }) => {
       }));
     }
   }, [isOpen]);
-  
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     // Use checked for checkboxes, value for other inputs
-    const newValue = type === 'checkbox' ? checked : 
+    const newValue = type === 'checkbox' ? checked :
                     type === 'range' ? parseFloat(value) : value;
-    
+
     setSettings(prev => ({
       ...prev,
       [name]: newValue
     }));
+
+    // Apply settings immediately for certain options
+    if (name === 'musicEnabled') {
+      setMute('music', !newValue);
+      // Play a sound to demonstrate the setting
+      if (newValue && settings.soundEffectsEnabled) {
+        playSound('tile_select');
+      }
+    } else if (name === 'soundEffectsEnabled') {
+      setMute('effects', !newValue);
+      // Play a sound to demonstrate the setting
+      if (newValue) {
+        playSound('tile_select');
+      }
+    } else if (name === 'volume') {
+      setVolume('master', newValue);
+      // Play a sound to demonstrate the volume
+      if (settings.soundEffectsEnabled) {
+        playSound('tile_select');
+      }
+    } else if (name === 'performanceMode') {
+      setPerformanceMode(newValue);
+    }
   };
-  
+
   // Handle theme change
   const handleThemeChange = (e) => {
     changeTheme(e.target.value);
   };
-  
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // Save settings
     saveGameSettings(settings);
-    
+
     // Close modal
     onClose();
   };
-  
+
   // If modal is not open, don't render anything
   if (!isOpen) return null;
-  
+
   return (
     <div className="settings-modal-overlay" role="dialog" aria-labelledby="settings-title">
       <div className="settings-modal">
-        <button 
-          className="close-button" 
+        <button
+          className="close-button"
           onClick={onClose}
           aria-label="Close settings"
         >
           ×
         </button>
-        
+
         <h2 id="settings-title">Game Settings</h2>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="settings-section">
             <h3>Display</h3>
-            
+
             <div className="form-group">
               <label htmlFor="theme">Theme:</label>
               <select
@@ -99,7 +126,7 @@ const Settings = ({ isOpen, onClose }) => {
                 ))}
               </select>
             </div>
-            
+
             <div className="form-group checkbox">
               <input
                 type="checkbox"
@@ -110,7 +137,7 @@ const Settings = ({ isOpen, onClose }) => {
               />
               <label htmlFor="showTimer">Show Timer</label>
             </div>
-            
+
             <div className="form-group checkbox">
               <input
                 type="checkbox"
@@ -122,10 +149,10 @@ const Settings = ({ isOpen, onClose }) => {
               <label htmlFor="highContrastMode">High Contrast Mode</label>
             </div>
           </div>
-          
+
           <div className="settings-section">
             <h3>Audio</h3>
-            
+
             <div className="form-group">
               <label htmlFor="volume">Volume: {Math.round(settings.volume * 100)}%</label>
               <input
@@ -139,7 +166,7 @@ const Settings = ({ isOpen, onClose }) => {
                 onChange={handleChange}
               />
             </div>
-            
+
             <div className="form-group checkbox">
               <input
                 type="checkbox"
@@ -150,7 +177,7 @@ const Settings = ({ isOpen, onClose }) => {
               />
               <label htmlFor="musicEnabled">Background Music</label>
             </div>
-            
+
             <div className="form-group checkbox">
               <input
                 type="checkbox"
@@ -162,10 +189,10 @@ const Settings = ({ isOpen, onClose }) => {
               <label htmlFor="soundEffectsEnabled">Sound Effects</label>
             </div>
           </div>
-          
+
           <div className="settings-section">
             <h3>Gameplay</h3>
-            
+
             <div className="form-group">
               <label htmlFor="difficulty">Difficulty:</label>
               <select
@@ -180,7 +207,7 @@ const Settings = ({ isOpen, onClose }) => {
                 <option value="expert">Expert</option>
               </select>
             </div>
-            
+
             <div className="form-group checkbox">
               <input
                 type="checkbox"
@@ -192,7 +219,77 @@ const Settings = ({ isOpen, onClose }) => {
               <label htmlFor="keyboardControls">Enable Keyboard Controls</label>
             </div>
           </div>
-          
+
+          <div className="settings-section">
+            <h3>Audio</h3>
+
+            <div className="form-group">
+              <label htmlFor="volume">Volume: {Math.round(settings.volume * 100)}%</label>
+              <input
+                type="range"
+                id="volume"
+                name="volume"
+                min="0"
+                max="1"
+                step="0.1"
+                value={settings.volume}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group checkbox">
+              <input
+                type="checkbox"
+                id="musicEnabled"
+                name="musicEnabled"
+                checked={settings.musicEnabled}
+                onChange={handleChange}
+              />
+              <label htmlFor="musicEnabled">Background Music</label>
+            </div>
+
+            <div className="form-group checkbox">
+              <input
+                type="checkbox"
+                id="soundEffectsEnabled"
+                name="soundEffectsEnabled"
+                checked={settings.soundEffectsEnabled}
+                onChange={handleChange}
+              />
+              <label htmlFor="soundEffectsEnabled">Sound Effects</label>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <h3>Performance</h3>
+
+            <div className="form-group">
+              <label htmlFor="performanceMode">Graphics Quality:</label>
+              <select
+                id="performanceMode"
+                name="performanceMode"
+                value={settings.performanceMode}
+                onChange={handleChange}
+              >
+                <option value="high">High Quality</option>
+                <option value="medium">Balanced</option>
+                <option value="low">Performance</option>
+                <option value="auto">Auto-Adjust</option>
+              </select>
+            </div>
+
+            <div className="form-group checkbox">
+              <input
+                type="checkbox"
+                id="showPerformanceMonitor"
+                name="showPerformanceMonitor"
+                checked={settings.showPerformanceMonitor}
+                onChange={handleChange}
+              />
+              <label htmlFor="showPerformanceMonitor">Show Performance Monitor</label>
+            </div>
+          </div>
+
           <div className="form-actions">
             <button type="button" className="cancel-button" onClick={onClose}>
               Cancel

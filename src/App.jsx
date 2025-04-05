@@ -6,9 +6,14 @@ import Leaderboard from './components/Leaderboard';
 import Settings from './components/Settings';
 import AIMode from './components/AIMode';
 import AIGameController from './components/AIGameController';
+import PerformanceMonitor from './components/PerformanceMonitor';
 import { useTheme } from './components/ThemeProvider';
 import { getHighScores, getPlayerProfile, getGameSettings } from './utils/storage';
 import { AI_DIFFICULTY } from './utils/aiPlayer';
+import { initAudio, playSound, playMusic, setVolume, setMute } from './utils/audioManager';
+import { createParticleEffect, createScreenTransition } from './utils/visualEffects';
+import { initPerformanceMonitoring, getPerformanceMode } from './utils/performanceOptimizer';
+import { detectBrowserCapabilities, applyBrowserFixes, addOfflineIndicator, registerServiceWorker } from './utils/browserCompatibility';
 import './styles/App.css';
 
 function App() {
@@ -25,7 +30,11 @@ function App() {
   const [playerProfile, setPlayerProfile] = useState({ name: 'Player' });
   const [gameSettings, setGameSettings] = useState({
     highContrastMode: false,
-    showTimer: true
+    showTimer: true,
+    musicEnabled: true,
+    soundEffectsEnabled: true,
+    volume: 0.7,
+    showPerformanceMonitor: false
   });
   const [aiGameConfig, setAiGameConfig] = useState({
     difficulty: AI_DIFFICULTY.MEDIUM,
@@ -34,6 +43,51 @@ function App() {
     rounds: 5
   });
   const [isAIMode, setIsAIMode] = useState(false);
+  const [browserSupport, setBrowserSupport] = useState({
+    isSupported: true,
+    capabilities: {}
+  });
+  const [isAudioInitialized, setIsAudioInitialized] = useState(false);
+
+  // Initialize app on mount
+  useEffect(() => {
+    // Detect browser capabilities
+    const capabilities = detectBrowserCapabilities();
+    setBrowserSupport({
+      isSupported: true, // We'll support all browsers for now
+      capabilities
+    });
+
+    // Apply browser-specific fixes
+    applyBrowserFixes();
+
+    // Add offline indicator
+    addOfflineIndicator();
+
+    // Register service worker for offline support
+    registerServiceWorker('/serviceWorker.js').catch(console.error);
+
+    // Initialize performance monitoring
+    initPerformanceMonitoring();
+
+    // Initialize audio system
+    initAudio().then(success => {
+      setIsAudioInitialized(success);
+      if (success && gameSettings.musicEnabled) {
+        playMusic(true);
+      }
+    }).catch(console.error);
+
+    // Apply screen transition effect
+    createScreenTransition('fade', 1000);
+
+    return () => {
+      // Clean up resources when component unmounts
+      if (isAudioInitialized) {
+        playMusic(false);
+      }
+    };
+  }, []);
 
   // Load high score, player profile, and game settings on mount
   useEffect(() => {
@@ -52,7 +106,11 @@ function App() {
       setGameSettings(prevSettings => ({
         ...prevSettings,
         highContrastMode: settings.highContrastMode || false,
-        showTimer: settings.showTimer !== undefined ? settings.showTimer : true
+        showTimer: settings.showTimer !== undefined ? settings.showTimer : true,
+        musicEnabled: settings.musicEnabled !== undefined ? settings.musicEnabled : true,
+        soundEffectsEnabled: settings.soundEffectsEnabled !== undefined ? settings.soundEffectsEnabled : true,
+        volume: settings.volume || 0.7,
+        showPerformanceMonitor: settings.showPerformanceMonitor || false
       }));
     }
   }, []);
@@ -273,6 +331,9 @@ function App() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
       />
+
+      {/* Performance Monitor */}
+      <PerformanceMonitor visible={gameSettings.showPerformanceMonitor} />
     </div>
   );
 }

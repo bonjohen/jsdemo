@@ -1,0 +1,81 @@
+.performance-monitor {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 9999;
+  transition: all 0.3s ease;
+  user-select: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.monitor-header {
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 100px;
+}
+
+.fps {
+  font-weight: bold;
+}
+
+.monitor-details {
+  padding: 5px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.label {
+  margin-right: 10px;
+  color: #aaa;
+}
+
+.value {
+  font-weight: bold;
+}
+
+.performance-mode {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.performance-mode label {
+  margin-bottom: 3px;
+  color: #aaa;
+}
+
+.performance-mode select {
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Color indicators for FPS */
+.fps.high {
+  color: #4caf50;
+}
+
+.fps.medium {
+  color: #ff9800;
+}
+
+.fps.low {
+  color: #f44336;
+}
