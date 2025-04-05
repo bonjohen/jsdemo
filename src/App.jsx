@@ -38,6 +38,7 @@ function App() {
   });
   const [aiGameConfig, setAiGameConfig] = useState({
     difficulty: AI_DIFFICULTY.MEDIUM,
+    personality: AI_PERSONALITY.BALANCED,
     gridSize: 4,
     patternLength: 4,
     rounds: 5
@@ -296,8 +297,10 @@ function App() {
                 onGameComplete={handleGameComplete}
                 playerName={playerProfile.name}
                 aiDifficulty={aiGameConfig.difficulty}
+                aiPersonality={aiGameConfig.personality}
                 rounds={aiGameConfig.rounds}
                 highContrast={gameSettings.highContrastMode}
+                soundEnabled={gameSettings.soundEffectsEnabled}
               />
             )}
 

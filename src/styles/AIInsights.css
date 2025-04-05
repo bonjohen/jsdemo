@@ -1,0 +1,323 @@
+.ai-insights-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.ai-insights-modal {
+  background-color: var(--background);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+  color: var(--text);
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.ai-insights-modal h2 {
+  margin-bottom: 1.5rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.tab-button.active {
+  border-bottom-color: var(--accent-color);
+  color: var(--accent-color);
+  opacity: 1;
+}
+
+.tab-content {
+  padding: 1rem 0;
+}
+
+/* Overview Tab */
+.insights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.insight-card {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.insight-card h3 {
+  margin-bottom: 1rem;
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+}
+
+.insight-card h4 {
+  margin: 1.5rem 0 0.75rem;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.insight-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.value {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 12px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--accent-color);
+  transition: width 0.3s ease;
+}
+
+.progress-label {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--accent-color);
+}
+
+.progress-description {
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+/* Adaptive Factors Tab */
+.section-description {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.factor-item {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.factor-item:last-child {
+  border-bottom: none;
+}
+
+.factor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.factor-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.factor-value {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.factor-bar {
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.factor-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.factor-description {
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
+/* Player Analysis Tab */
+.performance-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.performance-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.performance-label {
+  width: 80px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.performance-bar {
+  flex: 1;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.performance-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.performance-value {
+  width: 60px;
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.challenges-section {
+  margin-top: 1.5rem;
+}
+
+.tile-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.tile-item {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tile-item.success {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.tile-icon {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.tile-count {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ai-insights-modal {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .tabs {
+    flex-direction: column;
+    border-bottom: none;
+  }
+  
+  .tab-button {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    text-align: left;
+    padding: 0.5rem 1rem;
+  }
+  
+  .tab-button.active {
+    border-bottom-color: transparent;
+    border-left-color: var(--accent-color);
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+}

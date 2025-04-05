@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { AI_DIFFICULTY } from '../utils/aiPlayer';
+import { AI_DIFFICULTY, AI_PERSONALITY } from '../utils/aiPlayer';
 import '../styles/AIMode.css';
 
 /**
@@ -12,31 +12,33 @@ import '../styles/AIMode.css';
  */
 const AIMode = ({ onStartGame, onBack, playerName = 'Player' }) => {
   const [difficulty, setDifficulty] = useState(AI_DIFFICULTY.MEDIUM);
+  const [personality, setPersonality] = useState(AI_PERSONALITY.BALANCED);
   const [gridSize, setGridSize] = useState(4);
   const [patternLength, setPatternLength] = useState(4);
   const [rounds, setRounds] = useState(5);
-  
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     onStartGame({
       difficulty,
+      personality,
       gridSize,
       patternLength,
       rounds
     });
   };
-  
+
   return (
     <div className="ai-mode">
       <h2>AI vs. Player Mode</h2>
-      
+
       <p className="description">
         Challenge an AI opponent to a memory duel! Take turns memorizing and reproducing patterns.
         The player with the highest score after all rounds wins.
       </p>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="difficulty">AI Difficulty:</label>
@@ -51,7 +53,22 @@ const AIMode = ({ onStartGame, onBack, playerName = 'Player' }) => {
             <option value={AI_DIFFICULTY.ADAPTIVE}>Adaptive - AI adjusts to your skill level</option>
           </select>
         </div>
-        
+
+        <div className="form-group">
+          <label htmlFor="personality">AI Personality:</label>
+          <select
+            id="personality"
+            value={personality}
+            onChange={(e) => setPersonality(e.target.value)}
+          >
+            <option value={AI_PERSONALITY.BALANCED}>Balanced - Well-rounded learning</option>
+            <option value={AI_PERSONALITY.ANALYTICAL}>Analytical - Focuses on patterns</option>
+            <option value={AI_PERSONALITY.REACTIVE}>Reactive - Adapts quickly</option>
+            <option value={AI_PERSONALITY.CONSISTENT}>Consistent - Steady performance</option>
+            <option value={AI_PERSONALITY.AGGRESSIVE}>Aggressive - Takes more risks</option>
+          </select>
+        </div>
+
         <div className="form-group">
           <label htmlFor="gridSize">Grid Size:</label>
           <select
@@ -65,7 +82,7 @@ const AIMode = ({ onStartGame, onBack, playerName = 'Player' }) => {
             <option value="6">6x6</option>
           </select>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="patternLength">Starting Pattern Length:</label>
           <select
@@ -78,7 +95,7 @@ const AIMode = ({ onStartGame, onBack, playerName = 'Player' }) => {
             ))}
           </select>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="rounds">Number of Rounds:</label>
           <select
@@ -92,7 +109,7 @@ const AIMode = ({ onStartGame, onBack, playerName = 'Player' }) => {
             <option value="10">10 Rounds</option>
           </select>
         </div>
-        
+
         <div className="ai-info">
           <h3>AI Difficulty Explained</h3>
           <ul>
@@ -101,14 +118,23 @@ const AIMode = ({ onStartGame, onBack, playerName = 'Player' }) => {
             <li><strong>Hard:</strong> The AI has a 90% chance of remembering each tile correctly.</li>
             <li><strong>Adaptive:</strong> The AI starts at 60% accuracy and adjusts based on your performance.</li>
           </ul>
-          <p>All AI opponents learn from repeated patterns and improve slightly over time.</p>
+
+          <h3>AI Personality Types</h3>
+          <ul>
+            <li><strong>Balanced:</strong> Well-rounded learning across all aspects.</li>
+            <li><strong>Analytical:</strong> Excels at recognizing patterns but adapts slowly.</li>
+            <li><strong>Reactive:</strong> Adapts quickly to your play style but less consistent.</li>
+            <li><strong>Consistent:</strong> Maintains steady performance with minimal variance.</li>
+            <li><strong>Aggressive:</strong> Takes more risks, leading to higher variance in performance.</li>
+          </ul>
+          <p>All AI opponents learn from your play patterns and improve over time.</p>
         </div>
-        
+
         <div className="player-info">
           <h3>Player Info</h3>
           <p>Playing as: <strong>{playerName}</strong></p>
         </div>
-        
+
         <div className="form-actions">
           <button type="button" className="back-button" onClick={onBack}>
             Back

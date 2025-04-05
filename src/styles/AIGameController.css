@@ -263,12 +263,26 @@
   margin-bottom: 0.5rem;
 }
 
+.game-over-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .restart-button {
   background-color: var(--accent-color);
   color: white;
   font-size: 1.2rem;
   padding: 12px 30px;
-  margin-top: 1.5rem;
+}
+
+.insights-button {
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 1.2rem;
+  padding: 12px 30px;
 }
 
 /* Animations */
@@ -298,19 +312,19 @@
   .ai-game-header {
     flex-direction: column;
   }
-  
+
   .scores {
     flex-direction: row;
   }
-  
+
   .player-score, .ai-score {
     min-width: 100px;
   }
-  
+
   .score {
     font-size: 1.2rem;
   }
-  
+
   .winner-message {
     font-size: 1.2rem;
     padding: 0.75rem;
